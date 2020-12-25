@@ -80,3 +80,26 @@ class FaissIVF(Faiss):
     def __str__(self):
         return 'FaissIVF(n_list=%d, n_probe=%d)' % (self._n_list,
                                                     self._n_probe)
+
+
+class FaissIVFPQ(FaissIVF):
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        self.quantizer = faiss.IndexFlatL2(X.shape[1])
+        M = X.shape[1] // 2
+        index = faiss.IndexIVFPQ(
+            self.quantizer, X.shape[1], self._n_list, M, 8, faiss.METRIC_L2)
+
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+
+
+
+
