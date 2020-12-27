@@ -50,25 +50,24 @@ class FaissLSH(Faiss):
 
 
 class FaissPQ(Faiss):
-    def __init__(self, metric, n_bits):
-        self._n_bits = n_bits
-        self.index = None
+    def __init__(self, metric, n_M, n_bits):
         self._metric = metric
-        self.name = 'FaissPQ(n_bits={})'.format(self._n_bits)
+        self._n_M = n_M
+        self._n_bits = n_bits
+        self.name = self.__str__()
 
     def fit(self, X):
-        M = X.shape[1] // 2
-        print("start to fit, X.shape[1]=%d, M=%d" % (X.shape[1], M))
+        print("start to fit, X.shape[1]=%d, summary=%s" % (X.shape[1], self.__str__()))
 
         index = faiss.IndexPQ(
-            X.shape[1], M, self._n_bits, faiss.METRIC_L2)
+            X.shape[1], self._n_M, self._n_bits, faiss.METRIC_L2)
         index.train(X)
         index.add(X)
         self.index = index
 
     def __str__(self):
-        return 'FaissPQ(n_bits=%d)' % (self._n_bits)
-        
+        return 'FaissPQ(n_M=%d, n_bits=%d)' % (self._n_M, self._n_bits)
+
 
 class FaissIVF(Faiss):
     def __init__(self, metric, n_list):
@@ -103,8 +102,16 @@ class FaissIVF(Faiss):
                                                     self._n_probe)
 
 
-class FaissIVFPQ(FaissIVF):
+class FaissIVFPQ(Faiss):
+    def __init__(self, metric, n_list, n_bits):
+        self._metric = metric
+        self._n_list = n_list
+        self._n_bits = n_bits
+        self.name = self.__str__()
+
     def fit(self, X):
+        print("start to fit, X.shape[1]=%d, summary=%s" % (X.shape[1], self.__str__()))
+
         if self._metric == 'angular':
             X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
 
@@ -112,15 +119,14 @@ class FaissIVFPQ(FaissIVF):
             X = X.astype(numpy.float32)
 
         self.quantizer = faiss.IndexFlatL2(X.shape[1])
-        M = X.shape[1] // 2
+        M = 8
         index = faiss.IndexIVFPQ(
-            self.quantizer, X.shape[1], self._n_list, M, 8, faiss.METRIC_L2)
+            self.quantizer, X.shape[1], self._n_list, M, self._n_bits, faiss.METRIC_L2)
 
         index.train(X)
         index.add(X)
         self.index = index
 
     def __str__(self):
-        return 'FaissIVFPQ(n_list=%d, n_probe=%d)' % (self._n_list,
-                                                      self._n_probe)
+        return 'FaissIVFPQ(n_list=%d, n_probe=%d, n_bits=%d)' % (self._n_list, self._n_probe, self._n_bits)
 
