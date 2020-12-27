@@ -12,6 +12,7 @@ data/*
 *.log
 
 results/*
+results-backup/
 !results/*.png
 
 venv
