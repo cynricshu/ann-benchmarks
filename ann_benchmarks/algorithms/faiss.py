@@ -49,6 +49,27 @@ class FaissLSH(Faiss):
         self.index.add(X)
 
 
+class FaissPQ(Faiss):
+    def __init__(self, metric, n_bits):
+        self._n_bits = n_bits
+        self.index = None
+        self._metric = metric
+        self.name = 'FaissPQ(n_bits={})'.format(self._n_bits)
+
+    def fit(self, X):
+        M = X.shape[1] // 2
+        print("start to fit, X.shape[1]=%d, M=%d" % (X.shape[1], M))
+
+        index = faiss.IndexPQ(
+            X.shape[1], M, self._n_bits, faiss.METRIC_L2)
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissPQ(n_bits=%d)' % (self._n_bits)
+        
+
 class FaissIVF(Faiss):
     def __init__(self, metric, n_list):
         self._n_list = n_list
@@ -99,7 +120,7 @@ class FaissIVFPQ(FaissIVF):
         index.add(X)
         self.index = index
 
-
-
-
+    def __str__(self):
+        return 'FaissIVFPQ(n_list=%d, n_probe=%d)' % (self._n_list,
+                                                      self._n_probe)
 
