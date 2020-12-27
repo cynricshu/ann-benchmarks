@@ -225,7 +225,8 @@ def main():
     if len(definitions) == 0:
         raise Exception('Nothing to run')
     else:
-        logger.info(f'Order: {definitions}')
+        for definition in definitions:
+            logger.info(f'Order: {definition}')
 
     if args.parallelism > multiprocessing.cpu_count() - 1:
         raise Exception('Parallelism larger than %d! (CPU count minus one)' % (multiprocessing.cpu_count() - 1))
