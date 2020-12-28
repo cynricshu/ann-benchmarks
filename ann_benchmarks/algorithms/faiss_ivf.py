@@ -46,7 +46,7 @@ class FaissIVFPQ(Faiss):
         self._metric = metric
         self._n_list = n_list
         self._n_bits = n_bits
-        self.name = self.__str__()
+        self.name = 'FaissIVFPQ(n_list=%d, n_bits=%d)' % (self._n_list, self._n_bits)
 
     def fit(self, X):
         print("start to fit, X.shape[1]=%d, summary=%s" % (X.shape[1], self.__str__()))
@@ -58,7 +58,7 @@ class FaissIVFPQ(Faiss):
             X = X.astype(numpy.float32)
 
         self.quantizer = faiss.IndexFlatL2(X.shape[1])
-        M = 8
+        M = 4
         index = faiss.IndexIVFPQ(
             self.quantizer, X.shape[1], self._n_list, M, self._n_bits, faiss.METRIC_L2)
 
@@ -66,6 +66,12 @@ class FaissIVFPQ(Faiss):
         index.add(X)
         self.index = index
 
+    def set_query_arguments(self, n_probe):
+        faiss.cvar.indexIVF_stats.reset()
+        faiss.cvar.indexIVFPQ_stats.reset()
+        self._n_probe = n_probe
+        self.index.nprobe = self._n_probe
+    
     def __str__(self):
-        return 'FaissIVFPQ(n_list=%d, n_probe=%d, n_bits=%d)' % (self._n_list, self._n_probe, self._n_bits)
+        return 'FaissIVFPQ(n_list=%d, n_bits=%d, n_probe=%d)' % (self._n_list, self._n_bits, self._n_probe)
 
