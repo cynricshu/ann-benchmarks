@@ -41,7 +41,7 @@ float:
           args: [[2, 4, 10, 20, 25], [4, 6, 8, 10, 12]] # first-args will be used as nums_of_clusters, second-args will be used as nbits when build index
     faiss-ivf:
       docker-tag: ann-benchmarks-faiss
-      module: ann_benchmarks.algorithms.faiss
+      module: ann_benchmarks.algorithms.faiss_ivf
       constructor: FaissIVF
       base-args: ["@metric"]
       run-groups:
@@ -50,7 +50,7 @@ float:
           query-args: [[1, 5, 10, 50, 100, 200]] # will be used to set nprobe before query
     faiss-ivfpq:
       docker-tag: ann-benchmarks-faiss
-      module: ann_benchmarks.algorithms.faiss
+      module: ann_benchmarks.algorithms.faiss_ivf
       constructor: FaissIVFPQ
       base-args: ["@metric"]
       run-groups:
