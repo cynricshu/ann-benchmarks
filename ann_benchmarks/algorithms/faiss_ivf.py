@@ -70,7 +70,39 @@ class FaissIVFPQ(Faiss):
         faiss.cvar.indexIVFPQ_stats.reset()
         self._n_probe = n_probe
         self.index.nprobe = self._n_probe
-    
+
     def __str__(self):
         return 'FaissIVFPQ(n_list=%d, n_M=%d, n_bits=%d, n_probe=%d)' % (self._n_list, self._n_M, self._n_bits, self._n_probe)
 
+
+class FaissIVFPQFS(Faiss):
+    def __init__(self, metric, n_list, n_M):
+        self._metric = metric
+        self._n_list = n_list
+        self._n_M = n_M
+        self.name = 'FaissIVFPQFS(n_list=%d, n_M=%d)' % (self._n_list, self._n_M)
+
+    def fit(self, X):
+        # is this necessary?
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        self.quantizer = faiss.IndexFlatL2(X.shape[1]) # can be changed in further
+        index = faiss.IndexIVFPQFastScan(
+            self.quantizer, X.shape[1], self._n_list, self._n_M, 4, faiss.METRIC_L2)
+
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def set_query_arguments(self, n_probe):
+        faiss.cvar.indexIVF_stats.reset()
+        faiss.cvar.IVFFastScan_stats.reset()
+        self._n_probe = n_probe
+        self.index.nprobe = self._n_probe
+
+    def __str__(self):
+        return 'FaissIVFPQFS(n_list=%d, n_M=%d, n_probe=%d)' % (self._n_list, self._n_M, self._n_probe)
