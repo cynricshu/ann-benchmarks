@@ -229,6 +229,7 @@ def main():
     if len(definitions) == 0:
         raise Exception('Nothing to run')
     else:
+        logger.info(f'Total cases: {str(len(definitions))}')
         for definition in definitions:
             logger.info(f'Order: {definition}')
 
