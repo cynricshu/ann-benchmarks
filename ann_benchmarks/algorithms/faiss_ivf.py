@@ -58,10 +58,11 @@ class FaissIVFPQ(Faiss):
             X = X.astype(numpy.float32)
 
         self.quantizer = faiss.IndexFlatL2(X.shape[1]) # can be changed in further
-        index = faiss.IndexIVFPQ(
-            self.quantizer, X.shape[1], self._n_list, self._n_M, self._n_bits, faiss.METRIC_L2)
+        #index = faiss.IndexIVFPQ(
+        #    self.quantizer, X.shape[1], self._n_list, self._n_M, self._n_bits, faiss.METRIC_L2)
+        index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x{self._n_bits}", faiss.METRIC_L2)
 
-        index.train(X)
+        index.train(X[:250000])
         index.add(X)
         self.index = index
 
@@ -84,17 +85,15 @@ class FaissIVFPQFS(Faiss):
 
     def fit(self, X):
         # is this necessary?
-        if self._metric == 'angular':
-            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+        #if self._metric == 'angular':
+        #    X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
 
         if X.dtype != numpy.float32:
             X = X.astype(numpy.float32)
 
-        self.quantizer = faiss.IndexFlatL2(X.shape[1]) # can be changed in further
-        index = faiss.IndexIVFPQFastScan(
-            self.quantizer, X.shape[1], self._n_list, self._n_M, 4, faiss.METRIC_L2)
+        index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x4fs", faiss.METRIC_L2)
 
-        index.train(X)
+        index.train(X[:250000])
         index.add(X)
         self.index = index
 
