@@ -68,6 +68,17 @@ float:
           # first-args will be used as nlist, second as nums_of_clusters when build index
           args: [[500, 1000, 2000], [10, 25, 50]]
           query-args: [[1, 5, 10, 50, 100, 200]] # will be used to set nprobe before query
+    faiss-ivfpqfsr:
+      docker-tag: ann-benchmarks-faiss
+      module: ann_benchmarks.algorithms.faiss_ivf
+      constructor: FaissIVFPQFSr
+      base-args: ["@metric"]
+      run-groups:
+        base: 
+          # first-args will be used as nlist, second as nums_of_clusters when build index
+          args: [[500, 1000, 2000], [10, 25, 50]]
+          # first-args will be used as nprobe, second as reorder_k 
+          query-args: [[1, 5, 10, 50, 100, 200], [10, 100, 1000]]
     faiss-gpu:
       disabled: true
       docker-tag: ann-benchmarks-faiss
@@ -658,7 +669,9 @@ float:
       constructor: Scann
       run-groups:
         scann1:
+          # first args as num_leaves, second as anisotropic_quantization_threshold, third as dims_per_block
           args: [[2000], [0.2], [2]]
+          # first args as num_leaves_to_search, second as reorder_k
           query-args: [[[30, 120], [35, 100], [40, 80], [45, 80], [50, 80], [55, 95], [60, 110], [65, 110], [75, 110], [90, 110], [110, 120], [130, 150], [150, 200], [170, 200], [200, 300], [220, 500], [250, 500], [310, 300], [400, 300], [500, 500], [800, 1000]]]
         scann2:
           args: [[1500], [0.55], [1]]

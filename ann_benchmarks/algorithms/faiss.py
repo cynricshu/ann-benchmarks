@@ -12,6 +12,10 @@ class Faiss(BaseANN):
     def query(self, v, n):
         if self._metric == 'angular':
             v /= numpy.linalg.norm(v)
+
+        if self._n_reorder_k and self._n_reorder_k != 0:
+            self.index.k_factor = self._n_reorder_k / n
+            
         D, I = self.index.search(numpy.expand_dims(
             v, axis=0).astype(numpy.float32), n)
         return I[0]
