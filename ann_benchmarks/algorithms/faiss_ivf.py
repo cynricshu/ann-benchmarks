@@ -62,7 +62,7 @@ class FaissIVFPQ(Faiss):
         #    self.quantizer, X.shape[1], self._n_list, self._n_M, self._n_bits, faiss.METRIC_L2)
         index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x{self._n_bits}", faiss.METRIC_L2)
 
-        index.train(X[:250000])
+        index.train(X[:350000])
         index.add(X)
         self.index = index
 
@@ -85,21 +85,21 @@ class FaissIVFPQFS(Faiss):
 
     def fit(self, X):
         # is this necessary?
-        #if self._metric == 'angular':
-        #    X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
 
         if X.dtype != numpy.float32:
             X = X.astype(numpy.float32)
 
         index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x4fs", faiss.METRIC_L2)
 
-        index.train(X[:250000])
+        index.train(X[:350000])
         index.add(X)
         self.index = index
 
     def set_query_arguments(self, n_probe):
-        faiss.cvar.indexIVF_stats.reset()
-        faiss.cvar.IVFFastScan_stats.reset()
+        #faiss.cvar.indexIVF_stats.reset()
+        #faiss.cvar.IVFFastScan_stats.reset()
         self._n_probe = n_probe
         self.index.nprobe = self._n_probe
 
