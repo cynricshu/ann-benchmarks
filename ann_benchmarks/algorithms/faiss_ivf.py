@@ -62,7 +62,7 @@ class FaissIVFPQ(Faiss):
         #    self.quantizer, X.shape[1], self._n_list, self._n_M, self._n_bits, faiss.METRIC_L2)
         index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x{self._n_bits}", faiss.METRIC_L2)
 
-        index.train(X[:350000])
+        index.train(X[:250000])
         index.add(X)
         self.index = index
 
@@ -84,7 +84,6 @@ class FaissIVFPQFS(Faiss):
         self.name = 'FaissIVFPQFS(n_list=%d, n_M=%d)' % (self._n_list, self._n_M)
 
     def fit(self, X):
-        # is this necessary?
         if self._metric == 'angular':
             X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
 
@@ -93,7 +92,7 @@ class FaissIVFPQFS(Faiss):
 
         index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x4fs", faiss.METRIC_L2)
 
-        index.train(X[:350000])
+        index.train(X[:250000])
         index.add(X)
         self.index = index
 
@@ -112,29 +111,30 @@ class FaissIVFPQFSr(Faiss):
         self._metric = metric
         self._n_list = n_list
         self._n_M = n_M
-        self.name = 'FaissIVFPQFSr(n_list=%d, n_M=%d)' % (self._n_list, self._n_M)
+        self.name = 'FaissIVFPQFS,RFlat(n_list=%d, n_M=%d)' % (self._n_list, self._n_M)
 
     def fit(self, X):
-        # is this necessary?
         if self._metric == 'angular':
             X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
 
         if X.dtype != numpy.float32:
             X = X.astype(numpy.float32)
 
-        index = faiss.index_factory(X.shape[1], f"IVF{self._n_list},PQ{self._n_M}x4fs", faiss.METRIC_L2)
-        index.train(X[:350000])
+        index_build_str = f"IVF{self._n_list},PQ{self._n_M}x4fs,RFlat"
+        print(f"index_build_str={index_build_str}")
+        index = faiss.index_factory(X.shape[1], index_build_str, faiss.METRIC_L2)
+        index.train(X[:250000])
         index.add(X)
+        faiss.omp_set_num_threads(1)
 
-        index_refine = faiss.IndexRefineFlat(index, faiss.swig_ptr(X))
-        self.index = index_refine
+        self.index = index
     
     def set_query_arguments(self, n_probe, n_reorder_k):
-        #faiss.cvar.indexIVF_stats.reset()
-        #faiss.cvar.IVFFastScan_stats.reset()
+        faiss.cvar.indexIVF_stats.reset()
+        faiss.cvar.IVFFastScan_stats.reset()
         self._n_probe = n_probe
         self._n_reorder_k = n_reorder_k 
         self.index.nprobe = self._n_probe
 
     def __str__(self):
-        return 'FaissIVFPQFSr(n_list=%d, n_M=%d, n_probe=%d, n_reorder_k=%d)' % (self._n_list, self._n_M, self._n_probe, self._n_reorder_k)
+        return 'FaissIVFPQFS,RFlat(n_list=%d, n_M=%d, n_probe=%d, n_reorder_k=%d)' % (self._n_list, self._n_M, self._n_probe, self._n_reorder_k)

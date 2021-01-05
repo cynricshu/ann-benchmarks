@@ -6,7 +6,7 @@ protocol/c/fr-*
 install/*.txt
 install/*.yaml
 install/lib-*/
-data/*
+data
 *.class
 
 *.log
