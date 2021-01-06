@@ -107,11 +107,10 @@ class FaissIVFPQFS(Faiss):
 
 
 class FaissIVFPQFSr(Faiss):
-    def __init__(self, metric, n_list, n_M):
+    def __init__(self, metric, n_list):
         self._metric = metric
         self._n_list = n_list
-        self._n_M = n_M
-        self.name = 'FaissIVFPQFS,RFlat(n_list=%d, n_M=%d)' % (self._n_list, self._n_M)
+        self.name = 'FaissIVFPQFS,RFlat(n_list=%d)' % (self._n_list)
 
     def fit(self, X):
         if self._metric == 'angular':
@@ -120,12 +119,12 @@ class FaissIVFPQFSr(Faiss):
         if X.dtype != numpy.float32:
             X = X.astype(numpy.float32)
 
-        index_build_str = f"IVF{self._n_list},PQ{self._n_M}x4fs,RFlat"
+        M = X.shape[1] // 2
+        index_build_str = f"IVF{self._n_list},PQ{M}x4fs,RFlat"
         print(f"index_build_str={index_build_str}")
         index = faiss.index_factory(X.shape[1], index_build_str, faiss.METRIC_L2)
         index.train(X[:250000])
         index.add(X)
-        faiss.omp_set_num_threads(1)
 
         self.index = index
     
@@ -137,4 +136,4 @@ class FaissIVFPQFSr(Faiss):
         self.index.nprobe = self._n_probe
 
     def __str__(self):
-        return 'FaissIVFPQFS,RFlat(n_list=%d, n_M=%d, n_probe=%d, n_reorder_k=%d)' % (self._n_list, self._n_M, self._n_probe, self._n_reorder_k)
+        return 'FaissIVFPQFS,RFlat(n_list=%d, n_probe=%d, n_reorder_k=%d)' % (self._n_list, self._n_probe, self._n_reorder_k)
