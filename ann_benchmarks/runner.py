@@ -67,6 +67,9 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                           for v, single_results in zip(X, results)]
             return [(total / float(len(X)), v) for v in candidates]
 
+        # results 是一个(time, candidates)元祖的list，每一个元祖描述了一个query的结果
+        # 而candidates又是个(id, true_distance)元祖的list，元祖[0]是检索到的结果向量id，元祖[1]是算出来的ground truth的距离(计算逻辑见上面44行)
+        #（python在数据结构的描述上就是坨屎，不把代码逻辑看全就推理不出内存中的数据结构）
         if batch:
             results = batch_query(X_test)
         else:
@@ -92,6 +95,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
     additional = algo.get_additional()
     for k in additional:
         attrs[k] = additional[k]
+    
     return (attrs, results)
 
 
